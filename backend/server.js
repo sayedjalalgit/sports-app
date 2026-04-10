@@ -32,10 +32,11 @@ const startServer = async () => {
     await connectRedis()
     startScorePoller()
 
-    server.listen(env.port, () => {
+    server.listen(env.port, '0.0.0.0', () => {
       console.log(`Server running on port ${env.port}`)
       console.log(`Health check: http://localhost:${env.port}/health`)
     })
+    
   } catch (error) {
     console.error('Server failed to start:', error.message)
     process.exit(1)
