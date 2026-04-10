@@ -16,8 +16,8 @@ export default function LoginScreen() {
     dispatch(loginStart())
     try {
       const res = await api.post('/auth/send-otp', { phone })
-      setDemoOtp(res.data.data?.otp || '')
-      navigate('/otp', { state: { phone, demoOtp: res.data.data?.otp } })
+      const otp = res.data.data?.otp
+      navigate('/otp', { state: { phone, demoOtp: otp } })
     } catch (err) {
       dispatch(loginFailure(err.response?.data?.message || 'Failed to send OTP'))
     }

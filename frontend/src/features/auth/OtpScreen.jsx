@@ -6,12 +6,14 @@ import api from '../../services/api'
 
 export default function OtpScreen() {
   const [otp, setOtp] = useState('')
+  const [resendOtp, setResendOtp] = useState('')
   const [resendTimer, setResendTimer] = useState(30)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
   const { loading, error } = useSelector((state) => state.auth)
   const phone = location.state?.phone
+  const demoOtp = location.state?.demoOtp
 
   useEffect(() => {
     if (!phone) navigate('/login')
@@ -41,10 +43,17 @@ export default function OtpScreen() {
 
   const handleResend = async () => {
     if (resendTimer > 0) return
-    await api.post('/auth/send-otp', { phone })
-    setResendTimer(30)
-    setOtp('')
+    try {
+      const res = await api.post('/auth/send-otp', { phone })
+      setResendOtp(res.data.data?.otp)
+      setResendTimer(30)
+      setOtp('')
+    } catch (err) {
+      console.error(err)
+    }
   }
+
+  const displayOtp = resendOtp || demoOtp
 
   return (
     <div style={styles.container}>
@@ -61,7 +70,13 @@ export default function OtpScreen() {
           <span style={styles.phone}>{phone}</span>
         </p>
 
-        <p style={styles.hint}>Check your backend terminal for the OTP code</p>
+        {displayOtp && (
+          <div style={styles.otpDisplay}>
+            <p style={styles.otpLabel}>Your OTP code</p>
+            <p style={styles.otpValue}>{displayOtp}</p>
+            <p style={styles.otpNote}>Tap the code to auto-fill</p>
+          </div>
+        )}
 
         <input
           style={styles.otpInput}
@@ -124,6 +139,7 @@ const styles = {
     color: 'var(--color-text-secondary)',
     fontSize: '15px',
     cursor: 'pointer',
+    border: 'none',
   },
   top: {
     textAlign: 'center',
@@ -152,16 +168,38 @@ const styles = {
   subtitle: {
     color: 'var(--color-text-secondary)',
     fontSize: '14px',
-    marginBottom: '8px',
-  },
-  hint: {
-    color: 'var(--color-primary)',
-    fontSize: '12px',
-    marginBottom: '16px',
+    marginBottom: '20px',
   },
   phone: {
     color: 'var(--color-primary)',
     fontWeight: '500',
+  },
+  otpDisplay: {
+    background: 'rgba(34, 197, 94, 0.1)',
+    border: '0.5px solid var(--color-primary)',
+    borderRadius: 'var(--border-radius-sm)',
+    padding: '16px',
+    marginBottom: '20px',
+    textAlign: 'center',
+    cursor: 'pointer',
+  },
+  otpLabel: {
+    fontSize: '11px',
+    color: 'var(--color-primary)',
+    marginBottom: '6px',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+  },
+  otpValue: {
+    fontSize: '36px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    letterSpacing: '10px',
+    marginBottom: '4px',
+  },
+  otpNote: {
+    fontSize: '11px',
+    color: 'var(--color-text-muted)',
   },
   otpInput: {
     width: '100%',
