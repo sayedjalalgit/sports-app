@@ -6,6 +6,7 @@ import api from '../../services/api'
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState('')
+  const [demoOtp, setDemoOtp] = useState('')
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { loading, error } = useSelector((state) => state.auth)
@@ -14,8 +15,9 @@ export default function LoginScreen() {
     if (!phone || phone.length < 11) return
     dispatch(loginStart())
     try {
-      await api.post('/auth/send-otp', { phone })
-      navigate('/otp', { state: { phone } })
+      const res = await api.post('/auth/send-otp', { phone })
+      setDemoOtp(res.data.data?.otp || '')
+      navigate('/otp', { state: { phone, demoOtp: res.data.data?.otp } })
     } catch (err) {
       dispatch(loginFailure(err.response?.data?.message || 'Failed to send OTP'))
     }
@@ -44,6 +46,13 @@ export default function LoginScreen() {
             maxLength={11}
           />
         </div>
+
+        {demoOtp && (
+          <div style={styles.otpDisplay}>
+            <p style={styles.otpLabel}>Demo OTP (remove in production)</p>
+            <p style={styles.otpValue}>{demoOtp}</p>
+          </div>
+        )}
 
         {error && <p style={styles.error}>{error}</p>}
 
@@ -133,6 +142,25 @@ const styles = {
     fontSize: '16px',
     flex: 1,
     letterSpacing: '1px',
+  },
+  otpDisplay: {
+    background: 'rgba(34, 197, 94, 0.1)',
+    border: '0.5px solid var(--color-primary)',
+    borderRadius: 'var(--border-radius-sm)',
+    padding: '12px 16px',
+    marginBottom: '16px',
+    textAlign: 'center',
+  },
+  otpLabel: {
+    fontSize: '11px',
+    color: 'var(--color-primary)',
+    marginBottom: '4px',
+  },
+  otpValue: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: 'var(--color-primary)',
+    letterSpacing: '8px',
   },
   error: {
     color: 'var(--color-danger)',

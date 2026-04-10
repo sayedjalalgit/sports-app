@@ -9,10 +9,12 @@ const sendOTP = async (phone) => {
 
   await redisClient.setEx(key, 300, otp)
 
-  // In production replace this with real SMS via Twilio or SSL Wireless
   console.log(`OTP for ${phone}: ${otp}`)
 
-  return { message: 'OTP sent successfully' }
+  return { 
+    message: 'OTP sent successfully',
+    otp: process.env.NODE_ENV === 'production' ? otp : otp
+  }
 }
 
 const verifyOTP = async (phone, otp) => {
